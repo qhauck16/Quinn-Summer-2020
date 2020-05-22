@@ -1,8 +1,0 @@
-scores <- read.delim('/home/quinn/code/mapq_scores_output.txt')
-vector_score <- pull(scores, X0)
-mean(vector_score)
-median(vector_score)
-hist(vector_score, main = 'Hummingbird Nanopore Alignment MapQ Scores', xlab = 'MapQ Score')
-hist_data <- hist(vector_score, plot=FALSE)
-hist_data$counts <- log10(hist_data$counts)
-plot(hist_data, main = "Log-weighted counts of MapQ Scores", ylab = "log(counts)", xlab = 'MapQ Score')
