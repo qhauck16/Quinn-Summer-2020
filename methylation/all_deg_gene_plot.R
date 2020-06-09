@@ -7,6 +7,7 @@ all_deg_gene_plot <- function(extend, type_of_regulation){
     transcript_info <- full_transcript_info %>%
       filter(log2FoldChange <= 0)
   }
+  nrows <- nrow(transcript_info)
   tss_df <- data.frame(distance_from_tss = integer(),smooth = double(), bird = character())
   for (val in 1:nrow(transcript_info)){
     gene_info <- transcript_info[val,]
@@ -67,6 +68,6 @@ all_deg_gene_plot <- function(extend, type_of_regulation){
   
   ggplot(tss_df, aes(x = distance_from_tss, y = smooth))+
     geom_smooth(aes(color = bird), se=FALSE)+
-    labs(title = paste('Methylation for ',type_of_regulation,'-regulated genes'), x = paste('distance from TSS', '(bp)'), y = 'smoothed methylation value')
+    labs(title = paste('Methylation for',type_of_regulation,'-regulated genes'), x = paste('distance from TSS', '(bp)'), y = 'smoothed methylation value')+
+    annotate("text", label = paste("number of genes", nrows), x = 0.8* extend, y = 0.1)
 }
-
