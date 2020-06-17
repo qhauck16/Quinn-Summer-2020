@@ -69,5 +69,5 @@ all_deg_gene_plot <- function(extend, type_of_regulation){
   ggplot(tss_df, aes(x = distance_from_tss, y = smooth))+
     geom_smooth(aes(color = bird), se=FALSE)+
     labs(title = paste('Methylation for',type_of_regulation,'-regulated genes'), x = paste('distance from TSS', '(bp)'), y = 'smoothed methylation value')+
-    annotate("text", label = paste("number of genes", nrows), x = 0.8* extend, y = 0.1)
+    annotate("text", label = paste("number of genes =", nrows), x = 0.6* extend, y = 0.1)
 }
