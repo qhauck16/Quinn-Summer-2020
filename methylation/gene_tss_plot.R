@@ -1,6 +1,6 @@
 gene_tss_plot <- function(gene, extend){
   
-  gene_info <- transcript_info %>%
+  gene_info <- full_transcript_info %>%
     filter(gene == gene_id)
   
   if (gene_info$strand == '+'){
@@ -53,7 +53,8 @@ gene_tss_plot <- function(gene, extend){
   ggplot(full_data, aes(x = distance_from_tss, y = smooth))+
     geom_line(aes(color = bird))+
     geom_point(aes(color = bird))+
-    labs(title = paste('Methylation around ', gene), x = paste('distance from TSS', '(bp)'), y = 'smoothed methylation value')
+    labs(title = paste('Methylation around ', gene), x = paste('distance from TSS', '(bp)'), y = 'smoothed methylation value')+
+    annotate('text', label = paste('log2FC =', gene_info$log2FoldChange), x = 0.6 * extend, y = Inf, vjust = 1)
 }
 
   
