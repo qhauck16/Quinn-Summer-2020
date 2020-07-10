@@ -1,0 +1,53 @@
+---
+title: "`r params$name`"
+author: "Quinn"
+output: html_document
+params:
+  name: 'stringtie'
+  gtf: '/uru/Data/Nanopore/Analysis/gmoney/hbird/methylation/200525_hbird_stringtie2.gtf'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r include = FALSE}
+library(tidyverse)
+library(dplyr)
+library(Rgb)
+gtf_df <- read.gtf(params$gtf)
+```
+
+
+
+```{r stats, echo=FALSE}
+just_genes <- gtf_df %>%
+  distinct(gene_id,.keep_all = FALSE)
+num_of_genes <- nrow(just_genes)
+just_transcripts <- gtf_df %>%
+filter(feature == 'transcript')
+num_of_transcripts <- nrow(just_transcripts)
+transcript_extra <- just_transcripts %>%
+  group_by(gene_id) %>%
+ summarize(transcripts_per_gene = n())
+avg_t_per_gene <- mean(transcript_extra$transcripts_per_gene)
+trans_l <- just_transcripts %>%
+  mutate(length = end - start)
+avg_transcript_length <- mean(trans_l$length)
+exons <- gtf_df %>%
+  filter(feature == 'exon') %>%
+  group_by(gene_id) %>%
+  summarize(num_exon = n())
+avg_exon_per_gene <- mean(exons$num_exon)
+
+
+```
+
+Stats:
+Number of genes: `r num_of_genes`  
+Number of transcripts : `r num_of_transcripts`   
+Average trancripts per gene: `r avg_t_per_gene`  
+Average exons per gene: `r avg_exon_per_gene`  
+Average transcript length: `r avg_transcript_length`  
+
