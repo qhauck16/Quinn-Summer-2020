@@ -1,0 +1,49 @@
+#!/home/roham/miniconda3/bin/snakemake --snakefile
+import os
+"""
+This Snakemake pipeline takes bams as input and for each sample:
+    * Stringtie2 on the alignment and generates gtf and abundance file
+    * merges the transcripts from stringtie2
+    * Runs the second round of stringtie2 using the merged transcripts as reference and -e parameter
+"""
+###-------input paths/files (I should use a config file before commit) -------###
+long_bam_path = "/dilithium/Data/Nanopore/Analysis/quinn/SIRV/deSALT/"
+short_bam_path = "/dilithium/Data/Nanopore/Analysis/quinn/SIRV/hisat2/"
+base_out_path = "/dilithium/Data/Nanopore/Analysis/quinn/SIRV/stringtie2" # the base directory of outputs, alignment and stringtie2 directories will be created inside
+stringtie2_ref = "/dilithium/Data/Nanopore/Analysis/quinn/SIRV/SIRV_isoforms_multi-fasta-annotation_C_170612a.gtf"
+###--------------###
+###------- Extract sample names from bam directories -------###
+SAMPLESLONG = [f.split(".")[0] for f in os.listdir(long_bam_path) if f.endswith('.bam')]
+print(str(len(SAMPLESLONG)) + " long samples will be processed!")
+
+SAMPLESSHORT = [f.split(".")[0] for f in os.listdir(short_bam_path) if f.endswith('.bam')]
+print(str(len(SAMPLESSHORT)) + " short samples will be processed!")
+
+ALLSAMPLES=SAMPLESLONG+SAMPLESSHORT
+print(str(len(ALLSAMPLES)) + " total samples will be processed!")
+# print(str(SAMPLES))
+# ###--------------###
+# ###------- Pipeline Rules -------#####
+
+rule stringtie_merge:
+    input:
+        expand( base_out_path + "/illumina/stringtie2/stringtie2_1st/{sample1}/{sample1}_ST2_1st.gtf", sample1=SAMPLESSHORT)
+    output:
+        base_out_path + "/stringtie2_merge/illumina_merged.gtf"
+    message: """Merging Transcripts..."""
+    shell:"""
+        /home/roham/software/stringtie/stringtie --merge -G /dilithium/Data/Nanopore/Analysis/quinn/SIRV/SIRV_isoforms_multi-fasta-annotation_C_170612a.gtf -o {output} -c 10 -i {input} -v
+    """
+
+
+rule stringtie_merge_2:
+    input:
+        expand( base_out_path + "/nanopore/stringtie2/stringtie2_1st/{sample1}/{sample1}_ST2_1st.gtf", sample1=SAMPLESSHORT)
+    output:		      
+        base_out_path + "/stringtie2_merge/illumina_merged.gtf"
+    message: """Merging Transcripts..."""
+    shell:"""
+        /home/roham/software/stringtie/stringtie --merge -G /dilithium/Data/Nanopore/Analysis/quinn/SIRV/SIRV_isoforms_multi-fasta-annotation_C_170612a.gtf -o {output} -c 10 -i {input} -v
+     """
+
+					   
