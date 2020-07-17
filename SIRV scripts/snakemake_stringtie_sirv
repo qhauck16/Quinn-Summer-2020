@@ -1,0 +1,116 @@
+#!/home/roham/miniconda3/bin/snakemake --snakefile
+import os
+"""
+This Snakemake pipeline takes bams as input and for each sample:
+    * Stringtie2 on the alignment and generates gtf and abundance file
+    * merges the transcripts from stringtie2 
+    * Runs the second round of stringtie2 using the merged transcripts as reference and -e parameter
+"""
+###-------input paths/files (I should use a config file before commit) -------###
+long_bam_path = "/dilithium/Data/Nanopore/Analysis/quinn/SIRV/deSALT/"
+short_bam_path = "/dilithium/Data/Nanopore/Analysis/quinn/SIRV/hisat2/"
+base_out_path = "/dilithium/Data/Nanopore/Analysis/quinn/SIRV/stringtie2" # the base directory of outputs, alignment and stringtie2 directories will be created inside 
+stringtie2_ref = "/dilithium/Data/Nanopore/Analysis/quinn/SIRV/SIRV_isoforms_multi-fasta-annotation_C_170612a.gtf"
+###--------------###
+###------- Extract sample names from bam directories -------###
+SAMPLESLONG = [f.split(".")[0] for f in os.listdir(long_bam_path) if f.endswith('.bam')]
+print(str(len(SAMPLESLONG)) + " long samples will be processed!")
+
+SAMPLESSHORT = [f.split(".")[0] for f in os.listdir(short_bam_path) if f.endswith('.bam')]
+print(str(len(SAMPLESSHORT)) + " short samples will be processed!")
+
+ALLSAMPLES=SAMPLESLONG+SAMPLESSHORT
+print(str(len(ALLSAMPLES)) + " total samples will be processed!")
+# print(str(SAMPLES))
+# ###--------------###
+# ###------- Pipeline Rules -------#####
+rule all:
+     input:
+        expand( base_out_path + "/nanopore/stringtie2/stringtie2_2nd/{sample1}/{sample1}_ST2_2nd.gtf", sample1=SAMPLESLONG),
+        expand( base_out_path + "/illumina/stringtie2/stringtie2_2nd/{sample2}/{sample2}_ST2_2nd.gtf", sample2=SAMPLESSHORT)
+
+rule stringtie_long_1st:
+    input:
+        bam = long_bam_path + "{sample1}.bam",
+        ann = stringtie2_ref
+    output:
+        base_out_path + "/nanopore/stringtie2/stringtie2_1st/{sample1}/{sample1}_ST2_1st.gtf",
+        base_out_path + "/nanopore/stringtie2/stringtie2_1st/{sample1}/{sample1}_abun.txt"
+
+    params:
+        DIR = base_out_path + "/nanopore/stringtie2/stringtie2_1st/{sample1}",
+        file = "{sample1}_ST2_1st.gtf",
+        abun = "{sample1}_abun.txt"
+
+    threads: 50
+    message: """First stringtie run..."""
+    shell:"""
+        /home/roham/software/stringtie/stringtie {input.bam} -G {input.ann} --conservative -L -o {params.DIR}/{params.file} -p 50 -B -A {params.DIR}/{params.abun} -v
+    """
+
+rule stringtie_short_1st:
+    input:
+        bam = short_bam_path + "{sample2}.bam",
+        ann = stringtie2_ref
+    output:
+        base_out_path + "/illumina/stringtie2/stringtie2_1st/{sample2}/{sample2}_ST2_1st.gtf",
+        base_out_path + "/illumina/stringtie2/stringtie2_1st/{sample2}/{sample2}_abun.txt"
+
+    params:
+        DIR = base_out_path + "/illumina/stringtie2/stringtie2_1st/{sample2}",
+        file = "{sample2}_ST2_1st.gtf",
+        abun = "{sample2}_abun.txt"
+
+    threads: 50
+    message: """First stringtie run..."""
+    shell:"""
+        /home/roham/software/stringtie/stringtie {input.bam} -G {input.ann} --conservative -o {params.DIR}/{params.file} -p 50 -B -A {params.DIR}/{params.abun} -v 
+    """
+
+rule stringtie_merge:
+    input:
+        expand( base_out_path + "/nanopore/stringtie2/stringtie2_1st/{sample1}/{sample1}_ST2_1st.gtf", sample1=SAMPLESLONG),
+        expand( base_out_path + "/illumina/stringtie2/stringtie2_1st/{sample2}/{sample2}_ST2_1st.gtf", sample2=SAMPLESSHORT)
+    output:
+        base_out_path + "/stringtie2_merge/stringtie2_merged.gtf"
+    message: """Merging Transcripts..."""
+    shell:"""
+        /home/roham/software/stringtie/stringtie --merge -G {rules.stringtie_short_1st.input.ann} -o {output} -c 10 -i {input} -v 
+    """
+
+rule stringtie_long_2nd:
+    input:
+        bam = long_bam_path + "{sample1}.bam",
+        ann = base_out_path + "/stringtie2_merge/stringtie2_merged.gtf"
+    output:
+        base_out_path + "/nanopore/stringtie2/stringtie2_2nd/{sample1}/{sample1}_ST2_2nd.gtf",
+        base_out_path + "/nanopore/stringtie2/stringtie2_2nd/{sample1}/{sample1}_abun.txt"
+
+    params:
+        DIR = base_out_path + "/nanopore/stringtie2/stringtie2_2nd/{sample1}",
+        file = "{sample1}_ST2_2nd.gtf",
+        abun = "{sample1}_abun.txt"
+    threads: 50
+    message: """Second stringtie run..."""
+    shell:"""
+        /home/roham/software/stringtie/stringtie {input.bam} -G {input.ann} --conservative -L -o {params.DIR}/{params.file} -p {threads} -B -e -A {params.DIR}/{params.abun} -v
+    """
+
+rule stringtie_short_2nd:
+    input:
+        bam = short_bam_path + "{sample2}.bam",
+        ann = base_out_path + "/stringtie2_merge/stringtie2_merged.gtf"
+    output:
+        base_out_path + "/illumina/stringtie2/stringtie2_2nd/{sample2}/{sample2}_ST2_2nd.gtf",
+        base_out_path + "/illumina/stringtie2/stringtie2_2nd/{sample2}/{sample2}_abun.txt"
+
+    params:
+        DIR = base_out_path + "/illumina/stringtie2/stringtie2_2nd/{sample2}",
+        file = "{sample2}_ST2_2nd.gtf",
+        abun = "{sample2}_abun.txt"
+    threads: 50
+    message: """Second stringtie run..."""
+    shell:"""
+        /home/roham/software/stringtie/stringtie {input.bam} -G {input.ann} --conservative -o {params.DIR}/{params.file} -p {threads} -B -e -A {params.DIR}/{params.abun} -v
+    """
+###--------------###
