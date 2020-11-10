@@ -1,0 +1,71 @@
+---
+title: "SIRV analysis"
+author: "Quinn"
+date: "7/9/2020"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+params:
+  illumina_chrms: /dilithium/Data/Nanopore/Analysis/quinn/SIRV/analysis/illumina_chrms_1.txt
+  nanopore_chrms: /dilithium/Data/Nanopore/Analysis/quinn/SIRV/analysis/nanopore_chrms.txt
+---
+
+###this markdown takes in two files of sam RNAMEs, along with relevant abundance information from stringtie output
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(readr)
+library(reshape2)
+knitr::opts_chunk$set(echo = TRUE)
+SIRV1 = 8/69
+SIRV2 = 5/69
+SIRV3 = 11/69 
+SIRV4 = 7/69
+SIRV5 = 12/69
+SIRV6 = 18/69
+SIRV7 = 7/69
+expected <- c(SIRV1, SIRV2, SIRV3, SIRV4, SIRV5, SIRV6, SIRV7)
+nanopore_sirvs = read_tsv(params$nanopore_chrms)
+illumina_sirvs = read_tsv(params$illumina_chrms)
+```
+
+
+#plotting expected vs actual nanopore SIRV read proportions
+```{r nanopore, echo=FALSE} 
+colnames(nanopore_sirvs) <- 'chrm'
+nanopore_sirvs <- nanopore_sirvs %>%
+  filter(chrm != '*')
+n = nrow(nanopore_sirvs)
+
+nanopore_sirvs <- nanopore_sirvs %>%
+  group_by(chrm) %>%
+  summarize(actual =n()/n)
+nanopore_sirvs <- nanopore_sirvs %>%
+  cbind(expected)
+nanopore_sirvs <- nanopore_sirvs %>%
+  melt(id.vars = 'chrm')
+ggplot(nanopore_sirvs, aes(chrm, value))+
+  geom_col(aes(fill = variable), width = 0.6, position = position_dodge(width=0.5), stat="identity")+
+  labs(title = 'Nanopore SIRV read proportions', x = 'SIRV sequence', y = 'proportion of aligned reads')
+
+```
+
+#plotting expected vs actual illumina SIRV read proportions
+```{r illumina, echo=FALSE} 
+colnames(illumina_sirvs) <- 'chrm'
+illumina_sirvs <- illumina_sirvs %>%
+  filter(chrm != '*')
+n = nrow(illumina_sirvs)
+
+illumina_sirvs <- illumina_sirvs %>%
+  group_by(chrm) %>%
+  summarize(actual =n()/n)
+illumina_sirvs <- illumina_sirvs %>%
+  cbind(expected)
+illumina_sirvs <- illumina_sirvs %>%
+  melt(id.vars = 'chrm')
+ggplot(illumina_sirvs, aes(chrm, value))+
+  geom_col(aes(fill = variable), width = 0.6, position = position_dodge(width=0.5), stat="identity")+labs(title = 'Illumina SIRV read proportions', x = 'SIRV sequence', y = 'proportion of aligned reads')
+
+```
