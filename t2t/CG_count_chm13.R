@@ -15,7 +15,7 @@ for (i in 1:22) {
   temp_chrm <- genome[[temp_chrm_name]]
   cg_count_chm13 <<- cg_count_chm13 + countPattern(cg, temp_chrm)
 }
-cg_count_chm13 <- cg_count_chm13 + countPattern(cg, genome$chrX) + countPattern(cg, genome$chrM)
+cg_count_chm13 <- cg_count_chm13 + countPattern(cg, genome$chrX)
 
 ## Filter Granges object into dataframe of only desired variables
 
@@ -37,31 +37,39 @@ for (j in 1:23){
   unique_chr_df <- repeats_df %>%
     filter(chrm == temp_chr)
   
-  i = 1
+  indi_chrm_values <- vector(mode = 'numeric', length = length(types))
   }
   else{
     temp_chr <- 'chrX'
     unique_chr_df <- repeats_df %>%
       filter(chrm == temp_chr)
 
-    i = 1
+    indi_chrm_values <- vector(mode = 'numeric', length = length(types))
   }
 ##iterate through each type of sequence
-for (seq in types){
+for (i in 1:length(types)){
   specific_repeat_df <- unique_chr_df %>%
-    filter(type == seq)
+    filter(type == types[i])
   
   ## add a CG count to corresponding vector entry in counts for each element of selected type
-  for (k in 1:nrow(specific_repeat_df)){
-    temp_start <- as.numeric((specific_repeat_df$start)[k])
-    temp_end <- as.numeric((specific_repeat_df$end)[k])
-    temp_loc <- (genome[[temp_chr]])[temp_start:temp_end]
-    counts_chm13[i] <- counts_chm13[i] + countPattern(cg, temp_loc)
+  if(nrow(specific_repeat_df > 0)){
+    for (k in 1:(nrow(specific_repeat_df))){
+      temp_start <- as.numeric((specific_repeat_df$start)[k])
+      temp_end <- as.numeric((specific_repeat_df$end)[k])
+      temp_loc <- (genome[[temp_chr]])[temp_start:temp_end]
+      temp_value <- countPattern(cg, temp_loc)
+      counts_chm13[i] <- counts_chm13[i] + temp_value
+      indi_chrm_values[i] <- indi_chrm_values[i] + temp_value
+    }
   }
-  
-  ##update i for next entry in counts
-  i <<- i+1
 }
+  temp_chr_count <- countPattern(cg, genome[[temp_chr]])
+  temp_types_chm13 <- append(types, 'nonrepetitive')
+  indi_chrm_values <- append(indi_chrm_values, temp_chr_count-sum(indi_chrm_values))
+  indi_chrm_df <- data.frame(temp_types_chm13, indi_chrm_values)
+  file_name <- paste0('/dilithium/Data/Nanopore/Analysis/quinn/SIRV/t2t/chm13_tsv/', temp_chr)
+  write_tsv(indi_chrm_df, file_name)
+
 }
 
 
