@@ -3,9 +3,9 @@ library(DESeq2)
 
 ##assumes environment has res and countData loaded from short_read_deseq.R
 
-res <- res[!is.na(res$pvalue),]
-res <- res[!is.na(res$log2FoldChange)]
-res_filtered <- res[res$pvalue <= 10e-6,]
+res <- res[!is.na(res$padj),]
+
+res_filtered <- res[res$padj <= 0.008496075,]
 res_filtered_2 <- res_filtered[abs(res_filtered$log2FoldChange) >= 1,]
 genes <- rownames(res_filtered_2)
 
