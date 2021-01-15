@@ -1,3 +1,5 @@
+##takes the top 4 unidentified genes from res object and pulls sequences
+##generates file to be processed and examined further, pull from fasta using samtools faidx
 muscle_genes <- read.gtf('/dilithium/Data/Nanopore/Analysis/quinn/SIRV/short_read_analysis/HMB.annotation.gtf')
 
 unidentified <- top30_padj[c(5,9,16,30),]
