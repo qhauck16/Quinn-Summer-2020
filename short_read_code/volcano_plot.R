@@ -5,7 +5,8 @@ EnhancedVolcano(res,
                 lab = rownames(res),
                 x = 'log2FoldChange',
                 y = 'pvalue',
-                title = 'Hbird muscle genes')
+                title = 'Hbird muscle genes', 
+                selectLab = c('gene-ENHO|ENHO', 'gene-G0S2|G0S2', 'gene-PLA2G3|PLA2G3','gene-GPD1|GPD1','gene-RBP7|RBP7'))
 
 res <- res[!is.na(res$pvalue),]
 res <- res[!is.na(res$log2FoldChange)]
