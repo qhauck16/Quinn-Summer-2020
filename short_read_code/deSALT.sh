@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ref=/uru/Data/Nanopore/Analysis/gmoney/hbird/genome_asm_masurca/acolubris_masurca_ragoo_change_linewidth.fasta
-fastq=/uru/Data/Nanopore/projects/hummingbird/RNA/fastq/*m*.fastq.gz
+fastq=/uru/Data/Nanopore/projects/hummingbird/RNA/fastq/*200805*.fastq.gz
 out=/dilithium/Data/Nanopore/Analysis/quinn/SIRV/short_read_analysis/nanopore_bams
 
 #~/repos/deSALT/src/deSALT index $ref /uru/Data/Nanopore/Analysis/gmoney/hbird/genome_asm_masurca/desalt_index

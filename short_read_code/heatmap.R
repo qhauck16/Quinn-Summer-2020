@@ -2,10 +2,10 @@ library(pheatmap)
 library(DESeq2)
 
 ##assumes environment has res and countData loaded from short_read_deseq.R
-
 genes <- rownames(resOrdered[1:30, ])
 
 countData_filtered <- countData[match(genes, rownames(countData)),]
+rownames(countData_filtered) <- (str_split_fixed(rownames(countData_filtered),'\\|',2)[, 2])
 
 #view(countData_filtered)
 

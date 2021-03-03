@@ -4,8 +4,11 @@ load_all('~/R/BSgenome.t2t.v1.0.release/')
 library(BSgenome.t2t.v1.0.release)
 genome <- BSgenome.t2t.v1.0.release
 
+##install("BSgenome.Hsapiens.UCSC.hg38")
+##genome <- getBSgenome('hg38')
+##change above back!!!!!!
 ##load repeatmasker BED file as a GRanges object
-repeats <- readBed('/kyber/Data/Nanopore/Analysis/gmoney/CHM13/v1.0_final_assembly/annotations/chm13.draft_v1.0.fasta_rm.bed')
+repeats <- readBed('/kyber/Data/Nanopore/Analysis/gmoney/CHM13/v1.0_final_assembly/annotations/chm13.draft_v1.0_plus38Y_repeatmasker.out.bed')
 
 ## establish pattern of interest, find total count in T2T genome
 cg <- 'cg'
@@ -52,7 +55,7 @@ for (i in 1:length(types)){
     filter(type == types[i])
   
   ## add a CG count to corresponding vector entry in counts for each element of selected type
-  if(nrow(specific_repeat_df > 0)){
+  if(nrow(specific_repeat_df != 0)){
     for (k in 1:(nrow(specific_repeat_df))){
       temp_start <- as.numeric((specific_repeat_df$start)[k])
       temp_end <- as.numeric((specific_repeat_df$end)[k])
@@ -100,3 +103,6 @@ bar <- ggplot(full_breakdown, aes(x="", y=value, fill=types))+
   geom_bar(width = 1, stat = "identity")
 pie <- bar + coord_polar("y", start=0)
 pie
+
+df <- cbind(types, counts_chm13)
+write_tsv(as.data.frame(df), '/dilithium/Data/Nanopore/Analysis/quinn/SIRV/t2t/hg38_tsv/020321_chm13_counts.tsv')
