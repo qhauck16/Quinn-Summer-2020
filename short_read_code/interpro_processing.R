@@ -1,4 +1,5 @@
 library(topGO)
+ruby_gtf <- read.gtf('/uru/Data/Nanopore/Analysis/gmoney/hbird/210114_aliana_annotation/acolubris_masurca_ragoo_v2.gff')
 
 #post_transdecoder_genome_gff<- read.gtf('/dilithium/Data/Nanopore/Analysis/quinn/SIRV/short_read_analysis/unclassified_genes_2/HMB.annotation.fasta.transdecoder.genome.gff3')
 interpro_cols = c('ID', 'digest', 'length', 'analysis', 'accession', 'desc', 'start', 'end', 'score', 'status', 'date', 'interpro1', 'interpro2', 'GO', 'Pathways')
