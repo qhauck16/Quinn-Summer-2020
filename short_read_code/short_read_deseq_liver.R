@@ -11,3 +11,5 @@ res<- results(dds)
 ##order by adjusted p value
 resOrdered <- res[order(res$padj), ]
 head(resOrdered)
+head(as.data.frame(countData))
+test <- as.data.frame(countData)[grepl('G0S2', rownames(countData)),]
